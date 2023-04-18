@@ -23,16 +23,16 @@ app.post("/cadastro", async (req, res) => {
 
     const cadastroSchema = Joi.object({
         nome: Joi.required(),
-        email: Joi.email().required(),
-        senha: Joi.min(3).required(),
+        email: Joi.string().email().required(),
+        senha: Joi.string().min(3).required(),
         confirmeSenha: Joi.required()
     })
 
-    const cadastrados = {email, senha}
+    const cadastrados = { nome, email, senha, confirmeSenha }
 
-    const validation = cadastroSchema.validate(req.body, {abortEarly: false})
+    const validation = cadastroSchema.validate(req.body, { abortEarly: false })
 
-    if(validation.error){
+    if (validation.error) {
         const errors = validation.error.details.map(detail => detail.message)
         return res.status(422).send(errors);
     }
@@ -46,8 +46,62 @@ app.post("/cadastro", async (req, res) => {
     }
 })
 
-app.post("/login", async (req, res)=>{
-    
+app.get("/cadastro", async (req, res) => {
+    try {
+        const cadastrados = await db.collection("cadastrados").find({}).toArray();
+        res.send(cadastrados);
+
+    } catch (err) {
+        res.sendStatus(500);
+    }
+})
+
+app.post("/login", async (req, res) => {
+    const { email, senha } = req.body;
+
+    const logados = { email, senha };
+
+    const loginSchema = Joi.object({
+        email: Joi.required(),
+        senha: Joi.string().min(3).required()
+    })
+
+    const validation = loginSchema.validate(req.body, { abortEarly: false });
+
+    if (validation.error) {
+        const errors = validation.error.details.map(detail => detail.message);
+        return res.status(422).send(errors);
+    }
+
+
+    try {
+
+        const existingEmail = await db.collection("cadastrados").findOne({ email: logados.email });
+        if (!existingEmail) {
+            return res.status(404).send("O usuário não foi cadastrado!");
+        }
+        const existingPassword = await db.collection("cadastrados").findOne({ senha: logados.senha });
+        if (!existingPassword) {
+            return res.status(401).send("Senha incorreta");
+        }
+        await db.collection("login").insertOne(logados);
+        res.sendStatus(200);
+
+    } catch (err) {
+        res.sendStatus(500);
+    }
+})
+
+app.get("/login", async (req, res) => {
+
+    try {
+        const onLogin = await db.collection("login").find({}).toArray();
+        res.send(onLogin);
+
+
+    } catch (err) {
+        res.sendStatus(500);
+    }
 })
 
 
