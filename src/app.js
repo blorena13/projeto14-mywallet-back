@@ -134,6 +134,7 @@ app.get("/nova-transacao/:tipo", async (req, res) => {
     const { authorization } = req.headers;
     const token = authorization?.replace("Bearer ", "");
 
+
     if (!token) return res.sendStatus(401);
 
 
@@ -147,6 +148,24 @@ app.get("/nova-transacao/:tipo", async (req, res) => {
 
     } catch (err) {
         res.status(500).send(err.message);
+    }
+})
+
+app.get("/nova-transacao", async (req, res) => {
+    const { authorization } = req.headers;
+    const token = authorization?.replace("Bearer ", "");
+
+    if (!token) res.sendStatus(401);
+
+    try {
+        const usuario = await db.collection("login").findOne({ token });
+        if (!usuario) return res.sendStatus(401);
+
+        const transacoes = await db.collection("transacoes").find({}).toArray();
+        res.send(transacoes);
+    } catch (err) {
+        res.status(500).send(err.message);
+
     }
 })
 
