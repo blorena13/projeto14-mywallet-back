@@ -3,6 +3,9 @@ import cors from "cors";
 import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
 import Joi from "joi";
+import bcrypt from "bcrypt";
+import { v4 as uuid } from "uuid";
+import dayjs from "dayjs";
 
 const app = express();
 app.use(cors());
@@ -19,7 +22,7 @@ mongoClient.connect()
 
 app.post("/cadastro", async (req, res) => {
 
-    const { nome, email, senha, confirmeSenha } = req.body;
+    const { nome, email, senha } = req.body;
 
     const cadastroSchema = Joi.object({
         nome: Joi.required(),
@@ -27,8 +30,6 @@ app.post("/cadastro", async (req, res) => {
         senha: Joi.string().min(3).required(),
         confirmeSenha: Joi.required()
     })
-
-    const cadastrados = { nome, email, senha, confirmeSenha }
 
     const validation = cadastroSchema.validate(req.body, { abortEarly: false })
 
@@ -38,28 +39,25 @@ app.post("/cadastro", async (req, res) => {
     }
 
     try {
-        await db.collection("cadastrados").insertOne(cadastrados);
+        // verifica se o email foi cadastrado ou não
+        const usuario = await db.collection("cadastrados").findOne({ email });
+        if (usuario) return res.status(409).send("E-mail já cadastrado");
+
+        // criptografa a senha
+        const hash = bcrypt.hashSync(senha, 10);
+
+        await db.collection("cadastrados").insertOne({ nome, email, senha: hash });
         res.sendStatus(201);
+        // esta funcionando
 
     } catch (err) {
-        res.sendStatus(500);
-    }
-})
-
-app.get("/cadastro", async (req, res) => {
-    try {
-        const cadastrados = await db.collection("cadastrados").find({}).toArray();
-        res.send(cadastrados);
-
-    } catch (err) {
-        res.sendStatus(500);
+        res.status(500).send(err.message);
     }
 })
 
 app.post("/login", async (req, res) => {
     const { email, senha } = req.body;
 
-    const logados = { email, senha };
 
     const loginSchema = Joi.object({
         email: Joi.required(),
@@ -76,31 +74,79 @@ app.post("/login", async (req, res) => {
 
     try {
 
-        const existingEmail = await db.collection("cadastrados").findOne({ email: logados.email });
-        if (!existingEmail) {
+        const usuario = await db.collection("cadastrados").findOne({ email });
+        if (!usuario) {
             return res.status(404).send("O usuário não foi cadastrado!");
         }
-        const existingPassword = await db.collection("cadastrados").findOne({ senha: logados.senha });
-        if (!existingPassword) {
+        const senhaCorreta = bcrypt.compareSync(senha, usuario.senha)
+        if (!senhaCorreta) {
             return res.status(401).send("Senha incorreta");
         }
-        await db.collection("login").insertOne(logados);
-        res.sendStatus(200);
+
+        const token = uuid();
+        await db.collection("login").insertOne({ token, idUsuario: usuario._id });
+        res.status(200).send(token);
 
     } catch (err) {
-        res.sendStatus(500);
+        res.status(500).send(err.message);
     }
 })
 
-app.get("/login", async (req, res) => {
+app.post("/nova-transacao/:tipo", async (req, res) => {
+    const tipo = req.params.tipo;
+    const { authorization } = req.headers;
+    const token = authorization?.replace("Bearer ", "")
+    const { valor, descricao } = req.body;
+    const data = dayjs().format('DD/MM');
+
+    if (!token) return res.sendStatus(401);
+
+    const transacaoSchema = Joi.object({
+        valor: Joi.number().positive().required(),
+        descricao: Joi.required(),
+        tipo: Joi.string().valid("entrada", "saida"),
+    })
+
+    const validation = transacaoSchema.validate(req.body, { abortEarly: false })
+
+    if (validation.error) {
+        const errors = validation.error.details.map(detail => detail.message)
+        return res.status(422).send(errors);
+    }
+
+    const newobj = { valor, descricao, data, tipo, token }
 
     try {
-        const onLogin = await db.collection("login").find({}).toArray();
-        res.send(onLogin);
 
+        const usuario = await db.collection("login").findOne({ token })
+        if (!usuario) return res.sendStatus(401);
+
+        await db.collection("transacoes").insertOne(newobj);
+        res.sendStatus(201);
 
     } catch (err) {
-        res.sendStatus(500);
+        res.status(500).send(err.message);
+    }
+})
+
+app.get("/nova-transacao/:tipo", async (req, res) => {
+    const { tipo } = req.params;
+    const { authorization } = req.headers;
+    const token = authorization?.replace("Bearer ", "");
+
+    if (!token) return res.sendStatus(401);
+
+
+    try {
+
+        const usuario = await db.collection("login").findOne({ token });
+        if (!usuario) return res.sendStatus(401);
+
+        const transacoes = await db.collection("transacoes").find({ tipo: tipo }).toArray();
+        res.send(transacoes);
+
+    } catch (err) {
+        res.status(500).send(err.message);
     }
 })
 
