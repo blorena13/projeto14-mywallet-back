@@ -28,7 +28,6 @@ app.post("/cadastro", async (req, res) => {
         nome: Joi.required(),
         email: Joi.string().email().required(),
         senha: Joi.string().min(3).required(),
-        confirmeSenha: Joi.required()
     })
 
     const validation = cadastroSchema.validate(req.body, { abortEarly: false })
@@ -47,7 +46,7 @@ app.post("/cadastro", async (req, res) => {
         const hash = bcrypt.hashSync(senha, 10);
 
         await db.collection("cadastrados").insertOne({ nome, email, senha: hash });
-        res.sendStatus(201);
+        res.status(201).send(nome);
         // esta funcionando
 
     } catch (err) {
@@ -179,4 +178,4 @@ app.get("/nova-transacao", async (req, res) => {
 
 
 
-app.listen(PORT, () => console.log("Servidor rodando na porta 5000"));
+app.listen(process.env.PORT, () => console.log("Servidor rodando na porta 5000"));
