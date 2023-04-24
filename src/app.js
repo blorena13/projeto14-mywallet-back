@@ -46,7 +46,7 @@ app.post("/cadastro", async (req, res) => {
         const hash = bcrypt.hashSync(senha, 10);
 
         await db.collection("cadastrados").insertOne({ nome, email, senha: hash });
-        res.status(201).send(nome);
+        res.sendStatus(201)
         // esta funcionando
 
     } catch (err) {
@@ -113,12 +113,13 @@ app.post("/nova-transacao/:tipo", async (req, res) => {
         return res.status(422).send(errors);
     }
 
-    const newobj = { valor, descricao, data, tipo, token }
 
     try {
 
         const usuario = await db.collection("login").findOne({ token })
         if (!usuario) return res.sendStatus(401);
+
+        const newobj = { valor: Number(valor).toFixed(2), descricao, data, tipo, idUsuario: usuario.idUsuario }
 
         await db.collection("transacoes").insertOne(newobj);
         res.sendStatus(201);
@@ -142,7 +143,7 @@ app.get("/nova-transacao/:tipo", async (req, res) => {
         const usuario = await db.collection("login").findOne({ token });
         if (!usuario) return res.sendStatus(401);
 
-        const transacoes = await db.collection("transacoes").find({ tipo: tipo }).toArray();
+        const transacoes = await db.collection("transacoes").find({ tipo: tipo, idUsuario: usuario.idUsuario }).toArray();
         res.send(transacoes);
 
     } catch (err) {
@@ -160,7 +161,7 @@ app.get("/nova-transacao", async (req, res) => {
         const usuario = await db.collection("login").findOne({ token });
         if (!usuario) return res.sendStatus(401);
 
-        const transacoes = await db.collection("transacoes").find({}).toArray();
+        const transacoes = await db.collection("transacoes").find({idUsuario: usuario.idUsuario}).toArray();
         res.send(transacoes);
     } catch (err) {
         res.status(500).send(err.message);
@@ -178,4 +179,4 @@ app.get("/nova-transacao", async (req, res) => {
 
 
 
-app.listen(process.env.PORT, () => {console.log("Servidor rodando na porta " + process.env.PORT)});
+app.listen(PORT, () => {console.log("Servidor rodando na porta " + process.env.PORT)});
