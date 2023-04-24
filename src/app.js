@@ -84,7 +84,7 @@ app.post("/login", async (req, res) => {
 
         const token = uuid();
         await db.collection("login").insertOne({ token, idUsuario: usuario._id, nome: usuario.nome });
-        res.status(200).send({token, nome});
+        res.status(200).send(token);
 
     } catch (err) {
         res.status(500).send(err.message);
