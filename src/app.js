@@ -12,7 +12,7 @@ app.use(cors());
 app.use(express.json());
 dotenv.config();
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 let db;
 const mongoClient = new MongoClient(process.env.DATABASE_URL);
@@ -179,4 +179,4 @@ app.get("/nova-transacao", async (req, res) => {
 
 
 
-app.listen(PORT, () => {console.log("Servidor rodando na porta " + process.env.PORT)});
+app.listen(PORT, () => {console.log(`Servidor rodando na porta ${PORT}`)});
