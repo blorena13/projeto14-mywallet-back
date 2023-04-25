@@ -22,10 +22,11 @@ export async function postTransacaoTipo(req, res){
 export async function getTransacaoTipo(req, res) {
 
     const { tipo } = req.params;
+    const idUsuario = req.query.idUsuario;
    
     try {
-        const usuario = res.locals.usuario;
-        const transacoes = await db.collection("transacoes").find({ tipo: tipo, idUsuario: usuario.idUsuario }).toArray();
+        
+        const transacoes = await db.collection("transacoes").find({ tipo: tipo, idUsuario: idUsuario }).toArray();
         res.send(transacoes);
 
     } catch (err) {
