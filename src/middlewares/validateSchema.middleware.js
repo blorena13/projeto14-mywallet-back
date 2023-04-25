@@ -1,7 +1,9 @@
+import { usuarioSchema } from "../schemas/usuarios.schema";
+
 export function validateSchema(schema) {
 
     return (req, res, next) => {
-        const validation = cadastroSchema.validate(req.body, { abortEarly: false });
+        const validation = schema.validate(req.body, { abortEarly: false });
 
 
         if (validation.error) {
