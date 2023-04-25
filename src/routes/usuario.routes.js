@@ -6,7 +6,7 @@ import { validateSchema } from "../middlewares/validateSchema.middleware.js";
 const usuarioRouter = Router();
 
 usuarioRouter.post("/cadastro", validateSchema(usuarioSchema), signUp);
-usuarioRouter.post("/login", validateSchema(usuarioSchema), signIn);
+usuarioRouter.post("/login", signIn);
 
 export default usuarioRouter;
 
