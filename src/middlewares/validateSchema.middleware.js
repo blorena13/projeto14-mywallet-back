@@ -1,4 +1,3 @@
-import { usuarioSchema } from "../schemas/usuarios.schema";
 
 export function validateSchema(schema) {
 
