@@ -10,5 +10,3 @@ usuarioRouter.post("/cadastro", validateSchema(usuarioSchema), signUp);
 usuarioRouter.post("/login", validateSchema(loginSchema) ,signIn);
 
 export default usuarioRouter;
-
-//refatorado

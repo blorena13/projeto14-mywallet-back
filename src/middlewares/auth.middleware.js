@@ -6,13 +6,11 @@ export async function authValidation(req, res, next) {
     if (!token) return res.sendStatus(401);
 
     try {
-
         const usuario = await db.collection("login").findOne({ token })
         if (!usuario) return res.sendStatus(401);
 
-        res.locals.usuario = usuario;
+        res.locals.usuario = usuario.idUsuario;
         next();
-
     } catch(err){
         res.status(500).send(err.message);
     }

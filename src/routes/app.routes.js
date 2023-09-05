@@ -8,5 +8,3 @@ router.use(usuarioRouter);
 router.use(transacoesRouter);
 
 export default router;
-
-//refatorado
