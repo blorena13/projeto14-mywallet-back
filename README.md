@@ -17,7 +17,7 @@ Essa aplicação web tem como objetivo organizar seus gastos e entradas, utiliza
 
 ## Tecnologias
 
-![Static Badge](https://img.shields.io/badge/JavaScript--F7DF1E?style=for-the-badge&logo=JavaScript&logoColor=black&label=JavaScript&labelColor=%23F7DF1E)      ![Static Badge](https://img.shields.io/badge/Node.js%20-%20%23339933?style=for-the-badge&logo=Node.js&logoColor=%23FFFFFF)      ![Static Badge](https://img.shields.io/badge/Node.js--%23339933?style=for-the-badge&logo=Node.js&logoColor=white&label=Node.js&labelColor=%23339933)      ![Static Badge](https://img.shields.io/badge/mongodb--%2347A248?style=for-the-badge&logo=mongodb&logoColor=white&label=mongodb&labelColor=%2347A248)
+![Static Badge](https://img.shields.io/badge/JavaScript--F7DF1E?style=for-the-badge&logo=JavaScript&logoColor=black&label=JavaScript&labelColor=%23F7DF1E)      ![Static Badge](https://img.shields.io/badge/Node.js%20-%20%23339933?style=for-the-badge&logo=Node.js&logoColor=%23FFFFFF)     ![Static Badge](https://img.shields.io/badge/mongodb--%2347A248?style=for-the-badge&logo=mongodb&logoColor=white&label=mongodb&labelColor=%2347A248)
 
 
 ## Como rodar o projeto
